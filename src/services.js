@@ -19,3 +19,15 @@ export const GetDataAnggota = (skip = "0", searchkey = "", limit = "9") => {
     `/anggotas?nama_contains=${searchkey}&_limit=${limit}&_start=${_start}`
   );
 };
+
+export const getAnggotaDetail = id => {
+  return instance.get(`/anggotas/${id}`);
+};
+
+export const getRatingParameter = id => {
+  return instance.get(`ratings/parameter`);
+};
+
+export const postRating = data => {
+  return instance.post(`ratings`, data);
+};

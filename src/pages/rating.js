@@ -1,95 +1,145 @@
 import React from "react";
 import {
   Button,
-  Input,
-  Menu,
+  Form,
+  Grid,
+  Rating,
   Header,
   Image,
-  Card,
-  Loader
+  Modal,
+  Menu,
+  Icon,
+  Segment
 } from "semantic-ui-react";
-import { GetDataAnggota } from "services";
+import { getAnggotaDetail, getRatingParameter, postRating } from "services";
 import { Base_url } from "constant";
-
-const UserCard = ({ nama, pangkat, gambar }) => {
-  return (
-    <Card>
-      <img style={{ width: "250px", height: "280px" }} src={gambar} />
-      <Card.Content>
-        <Card.Header style={{ textTransform: "capitalize" }}>
-          {nama}
-        </Card.Header>
-        <Card.Meta>
-          <span className="date" style={{ textTransform: "capitalize" }}>
-            {pangkat}
-          </span>
-        </Card.Meta>
-      </Card.Content>
-    </Card>
-  );
-};
-
-const EmpryState = () => (
-  <div
-    style={{
-      display: "flex",
-      width: "100%",
-      height: "400px",
-      justifyContent: "center",
-      alignItems: "center"
-    }}
-  >
-    <Header>Belum Ada Data untuk di tampilkan</Header>
-  </div>
-);
 
 class RatingPage extends React.Component {
   state = {
-    curentPage: 0,
-    searchKey: ""
+    rating: {},
+    modalStatus: false
   };
-
   componentDidMount() {
-    this.fetch();
-  }
-
-  onSearch = (e, data) => {
-    this.setState({
-      searchKey: data.value
-    });
-    this.fetch(this.state.curentPage, data.value);
-  };
-
-  nextPage = () => {
-    console.log(this.state.curentPage);
-    const page = this.state.curentPage + 1;
-    this.fetch(page, this.state.searchKey);
-    this.setState({
-      curentPage: page
-    });
-  };
-
-  prevPage = () => {
-    const page =
-      this.state.curentPage > 0
-        ? this.state.curentPage - 1
-        : this.state.curentPage;
-    this.fetch(page, this.state.searchKey);
-    this.setState({
-      curentPage: page
-    });
-  };
-
-  fetch = (skip = 0, searchkey = "") => {
-    GetDataAnggota(skip, searchkey).then(res => {
+    if (this.props.match.params.id) {
+      getAnggotaDetail(this.props.match.params.id).then(res => {
+        this.setState({
+          userData: res.data
+        });
+      });
+    } else {
+      this.props.history.push("/");
+    }
+    getRatingParameter().then(res => {
+      const rating = this.state.rating;
+      res.data.forEach(ras => {
+        rating[ras] = 0;
+      });
       this.setState({
-        anggotas: res.data
+        ratingParams: res.data,
+        rating: rating
       });
     });
+  }
+
+  addRating = (e, data) => {
+    this.setState(state => {
+      state.rating[data.name] = data.rating;
+      return state;
+    });
+  };
+  submitRating1 = () => {
+    if (Object.keys(this.state.rating).length > 0) {
+      this.setState({
+        modalStatus: true
+      });
+    } else {
+      alert("Harap Masukan Rating");
+    }
+  };
+
+  submitRating2 = () => {
+    const anggota = this.state.userData.id;
+    const ratingdata = { anggota, ...this.state.rating };
+    postRating(ratingdata)
+      .then(() => {
+        this.setState({
+          modalStatus: true
+        });
+        this.props.history.push("/");
+      })
+      .catch(err => {
+        alert(err.response.message);
+      });
   };
   render() {
     return (
-      <div style={{ width: "100%" }}>
+      <div
+        className="login-form"
+        style={{
+          backgroundColor: "white",
+          position: "relative",
+          width: "100%"
+        }}
+      >
+        <Modal open={this.state.modalStatus}>
+          <Modal.Header>
+            Apakah yakin untuk memberikan rating seperti berikut
+          </Modal.Header>
+          <Modal.Content image>
+            {this.state.rating &&
+              Object.keys(this.state.rating).map(key => {
+                return (
+                  <div
+                    key={key}
+                    style={{
+                      padding: "20px 20px",
+                      display: "flex",
+                      flexDirection: "column"
+                      // flexWrap: "wrap"
+                    }}
+                  >
+                    <Header
+                      as="h2"
+                      color="orange"
+                      textAlign="center"
+                      style={{ textTransform: "capitalize" }}
+                    >
+                      {key}
+                    </Header>
+                    <Rating
+                      maxRating={6}
+                      defaultRating={this.state.rating[key]}
+                      disabled
+                      onRate={this.addRating}
+                      name={key}
+                      icon="star"
+                      size="massive"
+                    />
+                  </div>
+                );
+              })}
+          </Modal.Content>
+          <Modal.Actions>
+            <Button
+              color="orange"
+              icon
+              labelPosition="left"
+              onClick={() => this.setState({ modalStatus: false })}
+            >
+              <Icon name="pencil" />
+              Edit
+            </Button>
+            <Button
+              color="blue"
+              icon
+              onClick={this.submitRating2}
+              labelPosition="left"
+            >
+              <Icon name="send" />
+              Submit
+            </Button>
+          </Modal.Actions>
+        </Modal>
         <div
           style={{
             display: "flex",
@@ -113,58 +163,151 @@ class RatingPage extends React.Component {
             </Header>
           </div>
           <Menu secondary style={{ margin: "0" }}>
-            <Menu.Item name="dashboard" onClick={this.handleItemClick} />
             <Menu.Menu position="right">
               <Menu.Item>
-                <Input
-                  icon="search"
-                  onChange={this.onSearch}
-                  placeholder="Search..."
+                <Icon
+                  name="arrow alternate circle left"
+                  size="big"
+                  color="orange"
                 />
               </Menu.Item>
+              <Menu.Item name="Dashboard" onClick={this.handleItemClick} />
             </Menu.Menu>
           </Menu>
         </div>
         <div
           style={{
-            width: "100vw",
-            padding: "90px 5% 20px",
-            display: "flex",
-            flexDirection: "row",
-            flexWrap: "wrap"
+            position: "absolute",
+            width: "100%",
+            opacity: 0.1,
+            top: "0",
+            left: "0",
+            zIndex: 0,
+            height: "100%",
+            backgroundImage: "url('/logoLantas.png')",
+            backgroundPosition: "center",
+            backgroundSize: "460px 440px",
+            backgroundRepeat: "no-repeat"
           }}
-        >
-          {this.state.anggotas ? (
-            this.state.anggotas.length === 0 ? (
-              <EmpryState />
-            ) : (
-              this.state.anggotas.map(anggota => (
-                <div style={{ margin: "25px auto", width: "250px" }}>
-                  <UserCard
-                    fluid
-                    nama={anggota.nama}
-                    pangkat={anggota.pangkat}
-                    gambar={`${Base_url}${anggota.gambar &&
-                      anggota.gambar.url}`}
-                  />
-                </div>
-              ))
-            )
-          ) : (
-            <Loader size="huge">Loading</Loader>
-          )}
-        </div>
+        />
         <div
           style={{
             width: "100vw",
-            padding: "0px 5vw 40px",
+            position: "relative",
+            padding: "90px 5% 20px",
             display: "flex",
             flexDirection: "row",
-            justifyContent: "space-between"
+            zIndex: 1,
+            flexWrap: "wrap"
           }}
         >
-          <Button onClick={this.prevPage}>Sebelumnya</Button>
-          <Button onClick={this.nextPage}>Berikutnya</Button>
+          {this.state.userData && (
+            <div
+              style={{
+                width: "340px",
+                margin: "20px auto",
+                padding: "20px",
+                display: "flex",
+                borderRadius: "8px",
+                flexDirection: "column",
+                justifyContent: "center",
+                alignItems: "center",
+                boxShadow: " 0 1px 4px 0 rgba(0, 0, 0, 0.12)"
+              }}
+            >
+              <img
+                style={{
+                  width: "300px",
+                  height: "350px",
+                  borderRadius: "8px",
+                  boxShadow: " 0 1px 4px 0 rgba(0, 0, 0, 0.12)"
+                }}
+                src={
+                  this.state.userData.gambar &&
+                  `${Base_url}${this.state.userData.gambar.url}`
+                }
+                alt="anggota gambar"
+              />
+              <div style={{ width: "100%", margin: "20px 0px" }}>
+                <Header
+                  as="h1"
+                  fluid
+                  color="orange"
+                  style={{ textTransform: "capitalize" }}
+                >
+                  Nama: {this.state.userData.nama}
+                </Header>
+              </div>
+              <div style={{ width: "100%", margin: "0px 0px" }}>
+                <Header
+                  as="h2"
+                  fluid
+                  color="orange"
+                  style={{ textTransform: "capitalize" }}
+                >
+                  Pangkat: {this.state.userData.pangkat}
+                </Header>
+              </div>
+            </div>
+          )}
+
+          <div style={{ width: "400px", margin: "20px auto" }}>
+            <Header
+              as="h2"
+              fluid="true"
+              textAlign="center"
+              color="orange"
+              dividing
+              style={{
+                textTransform: "capitalize",
+
+                margin: "20px 0px"
+              }}
+            >
+              Berikan Rating
+            </Header>
+            {this.state.ratingParams &&
+              this.state.ratingParams.map(param => {
+                return (
+                  <div
+                    key={param}
+                    style={{
+                      padding: "20px 20px",
+                      display: "flex",
+                      flexDirection: "column"
+                      // flexWrap: "wrap"
+                    }}
+                  >
+                    <Header
+                      as="h2"
+                      color="orange"
+                      textAlign="center"
+                      style={{ textTransform: "capitalize" }}
+                    >
+                      {param}
+                    </Header>
+                    <Rating
+                      maxRating={6}
+                      defaultRating={0}
+                      onRate={this.addRating}
+                      name={param}
+                      icon="star"
+                      size="massive"
+                    />
+                  </div>
+                );
+              })}
+            <Header as="h2" textAlign="center">
+              <Button
+                size="huge"
+                fluid
+                color="orange"
+                onClick={this.submitRating1}
+              >
+                Submit
+              </Button>
+            </Header>
+          </div>
         </div>
       </div>
     );
