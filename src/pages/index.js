@@ -9,6 +9,9 @@ import {
 import LoginPage from "./login";
 import AnggotaPage from "./anggota";
 import RatingPage from "./rating";
+import Dashboard from "./dashboard";
+import DetailAnggotaPage from "./detailAnggota";
+import TambahAnggotaPage from "./tambahAnggota";
 
 const Pages = () => {
   return (
@@ -33,6 +36,9 @@ const Pages = () => {
         <Switch>
           <Route path="/login" component={LoginPage} />
           <Route path="/rating/:id" component={RatingPage} />
+          <Route path="/dashboard/" component={Dashboard} />
+          <Route path="/anggota/new" component={TambahAnggotaPage} />
+          <Route path="/anggota/:id" component={DetailAnggotaPage} />
           <Route path="/" component={AnggotaPage} />
         </Switch>
       </Router>

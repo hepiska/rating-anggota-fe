@@ -5,7 +5,8 @@ const instance = axios.create({
   baseURL: Base_url,
   timeout: 1000,
   headers: {
-    Authorization: `Bearer ${localStorage.getItem("token")}`
+    Authorization: `Bearer ${localStorage.getItem("token")}`,
+    "Content-Type": "application/json"
   }
 });
 
@@ -30,4 +31,32 @@ export const getRatingParameter = id => {
 
 export const postRating = data => {
   return instance.post(`ratings`, data);
+};
+
+export const getAverageRating = (
+  skip = 0,
+  searchkey = "",
+  sort = "average:-1",
+  limit = 7
+) => {
+  const _start = skip * limit;
+  return instance.get(
+    `anggotas/average-review?&_limit=${limit}&_start=${_start}&sort=${sort}&search=${searchkey}`
+  );
+};
+
+export const deleteAnggota = id => {
+  return instance.delete(`anggotas/${id}`);
+};
+
+export const editAnggota = (id, data) => {
+  return instance.put(`anggotas/${id}`, data);
+};
+export const tambahAnggota = data => {
+  return instance.post(`anggotas/`, data);
+};
+
+export const upload = data => {
+  const config = { headers: { "Content-Type": "multipart/*" } };
+  return instance.post("/upload", data, config);
 };

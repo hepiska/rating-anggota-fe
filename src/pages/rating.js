@@ -1,15 +1,12 @@
 import React from "react";
 import {
   Button,
-  Form,
-  Grid,
   Rating,
   Header,
   Image,
   Modal,
   Menu,
-  Icon,
-  Segment
+  Icon
 } from "semantic-ui-react";
 import { getAnggotaDetail, getRatingParameter, postRating } from "services";
 import { Base_url } from "constant";
