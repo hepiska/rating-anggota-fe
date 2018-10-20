@@ -1,22 +1,20 @@
 import React from "react";
 import {
-  Button,
-  Rating,
   Header,
   Image,
-  Modal,
   Grid,
-  Segment,
   Menu,
-  Icon
 } from "semantic-ui-react";
 import {
   Switch,
   Route
   //   Redirect,
 } from "react-router-dom";
+import { bindActionCreators } from "redux";
 import { postRating } from "services";
 import { Base_url } from "constant";
+import { connect } from 'react-redux'
+import { LOGOUT } from 'modules/auth'
 
 import RatingAnggotaPage from "./ratingAnggota";
 import AngotaPage from "./anggota";
@@ -24,9 +22,28 @@ import AngotaPage from "./anggota";
 class Dashboard extends React.Component {
   state = {
     rating: {},
-    modalStatus: false
+    modalStatus: false,
+    isAuth: this.props.isAuth
   };
-  componentDidMount() {}
+
+
+  static getDerivedStateFromProps(nextProps, prevState) {
+    if (nextProps.isAuth !== prevState.isAuth) {
+
+      return {
+        isAuth: nextProps.isAuth
+      }
+    }
+    return null
+  }
+
+  componentDidMount() {
+    console.log(this.state.isAuth);
+
+    if (!this.state.isAuth) {
+      this.props.history.push('/login')
+    }
+  }
 
   render() {
     return (
@@ -91,17 +108,13 @@ class Dashboard extends React.Component {
                   onClick={() => this.props.history.push("/dashboard/anggota")}
                 />
                 <Menu.Item
-                  name="Management User"
-                  active={
-                    this.props.history.location.pathname === "/dashboard/user"
-                  }
-                  onClick={() => this.props.history.push("/dashboard/user")}
-                />
-                <Menu.Item
                   name="Halaman Depan"
                   onClick={() => this.props.history.push("/")}
                 />
-                <Menu.Item name="Keluar" />
+                <Menu.Item name="Keluar" onClick={() => {
+                  this.props.LOGOUT()
+                  window.location.replace('/login')
+                }} />
               </Menu>
             </Grid.Column>
             <Grid.Column width={12}>
@@ -117,4 +130,18 @@ class Dashboard extends React.Component {
   }
 }
 
-export default Dashboard;
+const mapStateToProps = state => ({
+  isAuth: state.auth.isAuth
+})
+
+
+const mapDispatchToProps = dispatch =>
+  bindActionCreators(
+    {
+      LOGOUT
+    },
+    dispatch
+  );
+
+
+export default connect(mapStateToProps, mapDispatchToProps)(Dashboard);

@@ -10,6 +10,7 @@ import {
 } from "semantic-ui-react";
 import { GetDataAnggota } from "services";
 import { Base_url } from "constant";
+import { connect } from 'react-redux'
 
 const UserCard = ({ nama, pangkat, gambar }) => {
   return (
@@ -50,6 +51,11 @@ class AggotaPage extends React.Component {
   };
 
   componentDidMount() {
+    if (
+      !this.props.isAuth
+    ) {
+      this.props.history.push('/login')
+    }
     this.fetch();
   }
 
@@ -113,7 +119,7 @@ class AggotaPage extends React.Component {
             </Header>
           </div>
           <Menu secondary style={{ margin: "0" }}>
-            <Menu.Item name="Dashboard" onClick={this.handleItemClick} />
+            <Menu.Item name="Dashboard" onClick={() => this.props.history.push('/dashboard')} />
             <Menu.Menu position="right">
               <Menu.Item>
                 <Input
@@ -138,26 +144,26 @@ class AggotaPage extends React.Component {
             this.state.anggotas.length === 0 ? (
               <EmpryState />
             ) : (
-              this.state.anggotas.map(anggota => (
-                <div
-                  onClick={() =>
-                    this.props.history.push(`/rating/${anggota.id}`)
-                  }
-                  style={{ margin: "25px auto", width: "250px" }}
-                >
-                  <UserCard
-                    fluid
-                    nama={anggota.nama}
-                    pangkat={anggota.pangkat}
-                    gambar={`${Base_url}${anggota.gambar &&
-                      anggota.gambar.url}`}
-                  />
-                </div>
-              ))
-            )
+                this.state.anggotas.map(anggota => (
+                  <div
+                    onClick={() =>
+                      this.props.history.push(`/rating/${anggota.id}`)
+                    }
+                    style={{ margin: "25px auto", width: "250px" }}
+                  >
+                    <UserCard
+                      fluid
+                      nama={anggota.nama}
+                      pangkat={anggota.pangkat}
+                      gambar={`${Base_url}${anggota.gambar &&
+                        anggota.gambar.url}`}
+                    />
+                  </div>
+                ))
+              )
           ) : (
-            <Loader size="huge">Loading</Loader>
-          )}
+              <Loader size="huge">Loading</Loader>
+            )}
         </div>
         <div
           style={{
@@ -176,4 +182,9 @@ class AggotaPage extends React.Component {
   }
 }
 
-export default AggotaPage;
+const mapStateToProps = state => ({
+  isAuth: state.auth.isAuth
+})
+
+
+export default connect(mapStateToProps, null)(AggotaPage);

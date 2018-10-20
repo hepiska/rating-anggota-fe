@@ -165,10 +165,10 @@ class RatingPage extends React.Component {
                 <Icon
                   name="arrow alternate circle left"
                   size="big"
+                  onClick={() => this.props.history.goBack()}
                   color="orange"
                 />
               </Menu.Item>
-              <Menu.Item name="Dashboard" onClick={this.handleItemClick} />
             </Menu.Menu>
           </Menu>
         </div>

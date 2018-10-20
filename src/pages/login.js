@@ -18,8 +18,16 @@ class LoginPage extends React.Component {
     identifier: "",
     password: "",
     errorModaOpen: false,
-    errorMessange: ""
+    errorMessange: "",
+    isAuth: false,
   };
+
+  componentDidMount() {
+    if (this.state.isAuth) {
+      this.props.history.push('/')
+    }
+
+  }
 
   _onChange = (e, data) => {
     this.setState(state => {
@@ -33,8 +41,10 @@ class LoginPage extends React.Component {
       .then(({ data }) => {
         this.props.LOGIN({
           token: data.jwt,
-          username: data.user.username
+          username: data.user.username,
+          isAuth: true
         });
+        window.location.replace('/')
       })
       .catch(err => {
         this.setState({
@@ -122,6 +132,10 @@ class LoginPage extends React.Component {
   }
 }
 
+const mapStateToProps = state => ({
+  isAuth: state.auth.isAuth
+})
+
 const mapDispatchToProps = dispatch =>
   bindActionCreators(
     {
@@ -131,6 +145,6 @@ const mapDispatchToProps = dispatch =>
   );
 
 export default connect(
-  null,
+  mapStateToProps,
   mapDispatchToProps
 )(LoginPage);

@@ -294,21 +294,21 @@ class DetailAnggotaPage extends React.Component {
                   </Button>
                 </Header>
               ) : (
-                <Header>
-                  <Button
-                    onClick={() => {
-                      this.setState({
-                        isEdit: false
-                      });
-                    }}
-                  >
-                    Cancel
+                  <Header>
+                    <Button
+                      onClick={() => {
+                        this.setState({
+                          isEdit: false
+                        });
+                      }}
+                    >
+                      Cancel
                   </Button>
-                  <Button color="orange" onClick={this.onSubmit}>
-                    Submit
+                    <Button color="orange" onClick={this.onSubmit}>
+                      Submit
                   </Button>
-                </Header>
-              )}
+                  </Header>
+                )}
             </div>
           )}
         </div>
